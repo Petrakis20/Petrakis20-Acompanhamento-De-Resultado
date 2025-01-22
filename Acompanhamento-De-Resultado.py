@@ -35,7 +35,7 @@ if login_button:
         st.sidebar.success("Login realizado com sucesso!")
         
         # Sistema principal
-        st.title("Interface Interativa para Processamento de Planilhas")
+        st.title("Acompanhamento de Resultado")
 
         mapeamento = {
             994: {
