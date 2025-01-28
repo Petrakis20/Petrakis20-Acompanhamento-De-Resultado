@@ -4,49 +4,6 @@ import openpyxl
 import re
 import streamlit_authenticator as stauth
 
-# # Configuração de autenticação
-# users = {
-#     "usernames": {
-#         "admin@jcacontadores.com.br": {
-#             "name": "Admin",
-#             "password": "12345"  # Substitua por uma senha segura
-#         },
-#         "user@jcacontadores.com.br": {
-#             "name": "User",
-#             "password": "67890"  # Substitua por uma senha segura
-#         },
-#     }
-# }
-
-# authenticator = stauth.Authenticate(
-#     credentials=users,
-#     cookie_name="jcacontadores_auth",
-#     key="random_key",
-#     cookie_expiry_days=1
-# )
-
-# # Interface de login
-# try:
-#     name, authentication_status, username = authenticator.login("Login", "main")  # Use "main" ou "sidebar".
-# except ValueError as e:
-#     st.error(f"Erro na configuração do login: {e}")
-#     st.stop()
-
-# if authentication_status:
-#     if not username.endswith("@jcacontadores.com.br"):
-#         st.error("Apenas contas com o domínio @jcacontadores.com.br são permitidas.")
-#         st.stop()
-
-#     st.title(f"Bem-vindo, {name}!")
-#     authenticator.logout("Sair", "sidebar")
-
-#     # Resto do código...
-# elif authentication_status == False:
-#     st.error("Usuário ou senha inválidos")
-# elif authentication_status == None:
-#     st.warning("Por favor, insira suas credenciais")
-
-
 # Mapeamento de células para cada código e mês
 mapeamento = {
 994: {
@@ -198,6 +155,7 @@ mapeamento = {
 }
 
 def identificar_mes(nome_arquivo):
+    """Identifica o mês no nome do arquivo."""
     meses = [
         "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
@@ -205,9 +163,10 @@ def identificar_mes(nome_arquivo):
     for mes in meses:
         if mes.lower() in nome_arquivo.lower():
             return mes
-    raise ValueError("Mês não identificado no nome do arquivo.")
+    return None
 
 def extrair_dados_balancete(balancete_path):
+    """Extrai os dados relevantes do balancete."""
     def extract_code_number(code):
         match = re.search(r'\[(\d+)\]', str(code))
         return int(match.group(1)) if match else None
@@ -221,39 +180,60 @@ def extrair_dados_balancete(balancete_path):
     )
     return balancete_data
 
-def preencher_planilha_modelo(balancete_data, modelo_path, output_path, mes):
-    workbook = openpyxl.load_workbook(modelo_path)
-    sheet = workbook['Acomp.Resultado_2024']
+def preencher_planilha_modelo(balancete_data, workbook, mes):
+    """Preenche a planilha modelo para o mês especificado."""
+    sheet_name = 'Acomp.Resultado_2024'
+
+    if sheet_name not in workbook.sheetnames:
+        raise ValueError(f"A aba '{sheet_name}' não foi encontrada na planilha modelo.")
+    
+    sheet = workbook[sheet_name]
+
     for _, row in balancete_data.iterrows():
         codigo = row['Código']
         valor = row['Valor Final']
         if codigo in mapeamento and mes in mapeamento[codigo]:
             celula = mapeamento[codigo][mes]
+            st.write(f"Preenchendo célula {celula} com o valor {valor} para o código {codigo}")
+            # Garantir que a célula é preenchida corretamente
             sheet[celula].value = valor
-    workbook.save(output_path)
 
 # Interface de processamento
 st.title("Interface Interativa para Processamento de Planilhas")
 
-balancete_file = st.file_uploader("Faça upload do arquivo Balancete", type=['xlsx'])
+balancete_files = st.file_uploader("Faça upload dos arquivos de Balancete", type=['xlsx'], accept_multiple_files=True)
 modelo_file = st.file_uploader("Faça upload do modelo de planilha", type=['xlsx'])
 
 if st.button("Processar"):
-    if balancete_file and modelo_file:
+    if balancete_files and modelo_file:
         try:
-            mes = identificar_mes(balancete_file.name)
-            balancete_data = extrair_dados_balancete(balancete_file)
+            # Carregar o modelo de planilha apenas uma vez
+            workbook = openpyxl.load_workbook(modelo_file)
+
+            # Iterar sobre todos os balancetes enviados
+            for balancete_file in balancete_files:
+                mes = identificar_mes(balancete_file.name)
+                if mes:
+                    st.write(f"Processando o balancete: {balancete_file.name} para o mês: {mes}")
+                    
+                    # Verificar e exibir os dados extraídos
+                    balancete_data = extrair_dados_balancete(balancete_file)
+                    st.write(f"Dados extraídos do balancete ({mes}):")
+                    st.write(balancete_data)
+                    
+                    # Preencher a planilha para o mês identificado
+                    preencher_planilha_modelo(balancete_data, workbook, mes)
+                else:
+                    st.warning(f"Mês não identificado no arquivo: {balancete_file.name}")
+
+            # Salvar o arquivo preenchido após processar todos os balancetes
             output_path = 'modelo_preenchido.xlsx'
-            preencher_planilha_modelo(balancete_data, modelo_file, output_path, mes)
-            st.success("Processamento concluído com sucesso!")
+            workbook.save(output_path)
+
+            st.success("Processamento concluído com sucesso para todos os balancetes!")
             with open(output_path, "rb") as file:
                 st.download_button(label="Baixar Arquivo Processado", data=file, file_name="modelo_preenchido.xlsx")
         except Exception as e:
             st.error(f"Erro no processamento: {e}")
     else:
-        st.error("Por favor, carregue ambos os arquivos antes de processar.")
-
-# elif authentication_status == False:
-# st.error("Usuário ou senha inválidos")
-# elif authentication_status == None:
-# st.warning("Por favor, insira suas credenciais")
+        st.error("Por favor, carregue os arquivos de balancete e o modelo de planilha antes de processar.")
