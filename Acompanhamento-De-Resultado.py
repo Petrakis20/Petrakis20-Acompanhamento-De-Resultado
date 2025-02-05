@@ -9,7 +9,7 @@ mapeamento = {
 994: {
         "Janeiro": "D17", 
         "Fevereiro": "E17", 
-        "Março": "F17", 
+        "Marco": "F17", 
         "Abril": "D54", 
         "Maio": "E54", 
         "Junho": "F54",
@@ -23,7 +23,7 @@ mapeamento = {
 1022: {
         "Janeiro": "D18", 
         "Fevereiro": "E18", 
-        "Março": "F18", 
+        "Marco": "F18", 
         "Abril": "D55", 
         "Maio": "E55", 
         "Junho": "F55",
@@ -37,7 +37,7 @@ mapeamento = {
 1085: {
         "Janeiro": "D19", 
         "Fevereiro": "E19", 
-        "Março": "F19", 
+        "Marco": "F19", 
         "Abril": "D56", 
         "Maio": "E56", 
         "Junho": "F56",
@@ -51,7 +51,7 @@ mapeamento = {
 1176: {
         "Janeiro": "D20", 
         "Fevereiro": "E20", 
-        "Março": "F20", 
+        "Marco": "F20", 
         "Abril": "D57", 
         "Maio": "E57", 
         "Junho": "F57",
@@ -65,7 +65,7 @@ mapeamento = {
 5139: {
     "Janeiro": "D21",
     "Fevereiro": "E21",
-    "Março": "F21",
+    "Marco": "F21",
     "Abril": "D58",
     "Maio": "E58",
     "Junho": "F58",
@@ -79,7 +79,7 @@ mapeamento = {
 1197: {
     "Janeiro": "D22",
     "Fevereiro": "E22",
-    "Março": "F22",
+    "Marco": "F22",
     "Abril": "D59",
     "Maio": "E59",
     "Junho": "F59",
@@ -93,7 +93,7 @@ mapeamento = {
 3276: {
     "Janeiro": "D23",
     "Fevereiro": "E23",
-    "Março": "F23",
+    "Marco": "F23",
     "Abril": "D60",
     "Maio": "E60",
     "Junho": "F60",
@@ -107,7 +107,7 @@ mapeamento = {
 266: {
     "Janeiro": "D31",
     "Fevereiro": "E31",
-    "Março": "F31",
+    "Marco": "F31",
     "Abril": "D68",
     "Maio": "E68",
     "Junho": "F68",
@@ -121,7 +121,7 @@ mapeamento = {
 2079: {
     "Janeiro": "D39",
     "Fevereiro": "E39",
-    "Março": "F39",
+    "Marco": "F39",
     "Abril": "D76",
     "Maio": "E76",
     "Junho": "F76",
@@ -135,7 +135,7 @@ mapeamento = {
 2849: {
     "Janeiro": "D41",
     "Fevereiro": "E41",
-    "Março": "F41",
+    "Marco": "F41",
     "Abril": "D78",
     "Maio": "E78",
     "Junho": "F78",
@@ -157,7 +157,7 @@ mapeamento = {
 def identificar_mes(nome_arquivo):
     """Identifica o mês no nome do arquivo."""
     meses = [
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ]
     for mes in meses:
