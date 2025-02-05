@@ -157,7 +157,7 @@ mapeamento = {
 def identificar_mes(nome_arquivo):
     """Identifica o mês no nome do arquivo."""
     meses = [
-        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho",
         "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
     ]
     for mes in meses:
