@@ -41,7 +41,7 @@ mapeamento_adicoes = {
            "Julho": "C42", "Agosto": "D42", "Setembro": "E42", "Outubro": "C56", "Novembro": "D56", "Dezembro": "E56"}
 }
 
-# Lista dos meses (usada para as chaves dos dicionários de acumulação e mapeamentos)
+# Lista dos meses (utilizada nas chaves dos dicionários de acumulação e mapeamentos)
 months_list = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
 
@@ -61,7 +61,7 @@ col_to_month = {
     "12/2024": "Dezembro"
 }
 
-# Listas de códigos para cada aba
+# Listas dos códigos para cada aba
 acomp_codes = list(mapeamento_acomp.keys())
 adicoes_codes = list(mapeamento_adicoes.keys())
 
@@ -76,30 +76,33 @@ def extrair_dados_balancete(balancete_path):
     """
     df = pd.read_excel(balancete_path, sheet_name='Balancete dinâmico', engine='openpyxl')
     df.columns = [col.strip() if isinstance(col, str) else col for col in df.columns]
-    # Converte a coluna 'Código' para numérico
+    # Converte a coluna 'Código' para numérico (assumindo que já está em formato simples)
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
 
 st.title("Processamento de Balancetes - Mês nas Colunas (Formato MM/2024)")
 
+# Campos para inserir Nome da Empresa e CNPJ
+nome_empresa = st.text_input("Nome da Empresa")
+cnpj_empresa = st.text_input("CNPJ da Empresa")
+
 balancete_files = st.file_uploader("Faça upload dos arquivos de Balancete", type=['xlsx'], accept_multiple_files=True)
 modelo_file = st.file_uploader("Faça upload do modelo de planilha", type=['xlsx'])
 
 if st.button("Processar"):
-    if balancete_files and modelo_file:
+    if balancete_files and modelo_file and nome_empresa and cnpj_empresa:
         try:
             # Processa cada arquivo de balancete
             for balancete_file in balancete_files:
                 df = extrair_dados_balancete(balancete_file)
                 st.write(f"Dados extraídos do arquivo {balancete_file.name}:")
                 st.write(df)
-                # Itera por cada linha e para cada coluna identificada como mês
+                # Itera por cada linha e para cada coluna que corresponde a um mês
                 for _, row in df.iterrows():
                     codigo = row['Código']
                     if pd.isna(codigo):
                         continue
                     for col in df.columns:
-                        # Se a coluna tiver o formato de mês (ex.: "02/2024")
                         if col in col_to_month:
                             month_name = col_to_month[col]
                             valor = row[col]
@@ -107,10 +110,8 @@ if st.button("Processar"):
                                 valor = abs(valor)
                             else:
                                 valor = 0
-                            # Acumula para a aba Acomp.Resultado_2024
                             if codigo in acomp_codes:
                                 acomp_values[codigo][month_name] += valor
-                            # Acumula para a aba Adições 2024
                             if codigo in adicoes_codes:
                                 adicoes_values[codigo][month_name] += valor
 
@@ -127,6 +128,10 @@ if st.button("Processar"):
                     st.write(f"Acomp.Resultado_2024: Preenchendo célula {celula} com o valor {valor} para o código {codigo} no mês {mes}")
                     sheet_acomp[celula].value = valor
 
+            # Insere Nome da Empresa e CNPJ nas células F7 e F8, respectivamente, na aba Acomp.Resultado_2024
+            sheet_acomp["F7"].value = nome_empresa
+            sheet_acomp["F8"].value = cnpj_empresa
+
             # Preenche a aba "Adições 2024"
             if "Adições 2024" not in workbook.sheetnames:
                 raise ValueError("A aba 'Adições 2024' não foi encontrada na planilha modelo.")
@@ -142,14 +147,17 @@ if st.button("Processar"):
             workbook.save(output)
             output.seek(0)
             
+            # Nome do arquivo de download conforme solicitado
+            file_name = f"Acompanhamento de Resultado - {nome_empresa}.xlsx"
+            
             st.success("Processamento concluído com sucesso!")
             st.download_button(
                 label="Baixar Arquivo Processado",
                 data=output,
-                file_name="modelo_preenchido.xlsx",
+                file_name=file_name,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             )
         except Exception as e:
             st.error(f"Erro no processamento: {e}")
     else:
-        st.error("Por favor, carregue os arquivos de balancete e o modelo de planilha.")
+        st.error("Por favor, carregue os arquivos de balancete, o modelo de planilha e preencha o Nome e CNPJ da Empresa.")
