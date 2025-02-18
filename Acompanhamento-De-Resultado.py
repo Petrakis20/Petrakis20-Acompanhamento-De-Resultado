@@ -80,7 +80,7 @@ def extrair_dados_balancete(balancete_path):
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
 
-st.title("Processamento de Balancetes - Mês nas Colunas (Formato MM/2024)")
+st.title("Acompanhamento de Resultados Lucro Real")
 
 # Campos para inserir Nome da Empresa e CNPJ
 nome_empresa = st.text_input("Nome da Empresa")
