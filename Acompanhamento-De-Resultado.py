@@ -3,6 +3,9 @@ import pandas as pd
 import openpyxl
 import io
 
+# Adicione o caminho para o arquivo da logo
+logo_path = "logo JCA.png"
+
 # Mapeamento para a aba "Acomp.Resultado_2024"
 mapeamento_acomp = {
     994:  {"Janeiro": "D17", "Fevereiro": "E17", "Março": "F17", "Abril": "D54", "Maio": "E54", "Junho": "F54",
@@ -80,7 +83,9 @@ def extrair_dados_balancete(balancete_path):
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
 
-st.title("Acompanhamento de Resultados Lucro Real")
+st.image(logo_path, width=150)
+
+st.title("Acompanhamento de Resultados Lucro Real - JCA Contadores")
 
 # Campos para inserir Nome da Empresa e CNPJ
 nome_empresa = st.text_input("Nome da Empresa")
