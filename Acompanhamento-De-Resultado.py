@@ -3,9 +3,6 @@ import pandas as pd
 import openpyxl
 import io
 
-# Adicione o caminho para o arquivo da logo
-logo_path = "logo JCA.png"
-
 # Mapeamento para a aba "Acomp.Resultado_2024"
 mapeamento_acomp = {
     994:  {"Janeiro": "D17", "Fevereiro": "E17", "Março": "F17", "Abril": "D54", "Maio": "E54", "Junho": "F54",
@@ -30,25 +27,11 @@ mapeamento_acomp = {
            "Julho": "D115", "Agosto": "E115", "Setembro": "F115", "Outubro": "D152", "Novembro": "E152", "Dezembro": "F152"}
 }
 
-# Mapeamento para a aba "Adições 2024"
-mapeamento_adicoes = {
-    6250: {"Janeiro": "C10", "Fevereiro": "D10", "Março": "E10", "Abril": "C24", "Maio": "D24", "Junho": "E24",
-           "Julho": "C38", "Agosto": "D38", "Setembro": "E38", "Outubro": "C52", "Novembro": "D52", "Dezembro": "E52"},
-    6109: {"Janeiro": "C11", "Fevereiro": "D11", "Março": "E11", "Abril": "C25", "Maio": "D25", "Junho": "E25",
-           "Julho": "C39", "Agosto": "D39", "Setembro": "E39", "Outubro": "C53", "Novembro": "D53", "Dezembro": "E53"},
-    3325: {"Janeiro": "C12", "Fevereiro": "D12", "Março": "E12", "Abril": "C26", "Maio": "D26", "Junho": "E26",
-           "Julho": "C40", "Agosto": "D40", "Setembro": "E40", "Outubro": "C54", "Novembro": "D54", "Dezembro": "E54"},
-    6257: {"Janeiro": "C13", "Fevereiro": "D13", "Março": "E13", "Abril": "C27", "Maio": "D27", "Junho": "E27",
-           "Julho": "C41", "Agosto": "D41", "Setembro": "E41", "Outubro": "C55", "Novembro": "D55", "Dezembro": "E55"},
-    6119: {"Janeiro": "C14", "Fevereiro": "D14", "Março": "E14", "Abril": "C28", "Maio": "D28", "Junho": "E28",
-           "Julho": "C42", "Agosto": "D42", "Setembro": "E42", "Outubro": "C56", "Novembro": "D56", "Dezembro": "E56"}
-}
-
-# Lista dos meses (utilizada nas chaves dos dicionários de acumulação e mapeamentos)
+# Lista dos meses (usada como chave para acumulação)
 months_list = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
 
-# Dicionário que converte o cabeçalho da coluna (formato "MM/2024") para o nome do mês
+# Mapeia cabeçalhos no formato "MM/2024" para o nome do mês
 col_to_month = {
     "01/2024": "Janeiro",
     "02/2024": "Fevereiro",
@@ -64,13 +47,14 @@ col_to_month = {
     "12/2024": "Dezembro"
 }
 
-# Listas dos códigos para cada aba
+# Lista dos códigos que serão preenchidos na aba Acomp.Resultado_2024
+# (conforme mapeamento_acomp; note que o código 1785 não está aqui)
 acomp_codes = list(mapeamento_acomp.keys())
-adicoes_codes = list(mapeamento_adicoes.keys())
 
 # Inicializa os acumuladores de valores para cada código e mês
 acomp_values = {codigo: {mes: 0 for mes in months_list} for codigo in acomp_codes}
-adicoes_values = {codigo: {mes: 0 for mes in months_list} for codigo in adicoes_codes}
+# Inicializa um acumulador para os valores do código 1785 (que será utilizado para os meses específicos)
+code1785_values = {mes: 0 for mes in months_list}
 
 def extrair_dados_balancete(balancete_path):
     """
@@ -79,13 +63,11 @@ def extrair_dados_balancete(balancete_path):
     """
     df = pd.read_excel(balancete_path, sheet_name='Balancete dinâmico', engine='openpyxl')
     df.columns = [col.strip() if isinstance(col, str) else col for col in df.columns]
-    # Converte a coluna 'Código' para numérico (assumindo que já está em formato simples)
+    # Converte a coluna 'Código' para numérico
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
 
-st.image(logo_path, width=150)
-
-st.title("Acompanhamento de Resultados Lucro Real - JCA Contadores")
+st.title("Processamento de Balancetes - Mês nas Colunas (Formato MM/2024)")
 
 # Campos para inserir Nome da Empresa e CNPJ
 nome_empresa = st.text_input("Nome da Empresa")
@@ -108,6 +90,7 @@ if st.button("Processar"):
                     if pd.isna(codigo):
                         continue
                     for col in df.columns:
+                        # Se a coluna tiver um cabeçalho no formato "MM/2024"
                         if col in col_to_month:
                             month_name = col_to_month[col]
                             valor = row[col]
@@ -115,11 +98,20 @@ if st.button("Processar"):
                                 valor = abs(valor)
                             else:
                                 valor = 0
+                            # Acumula os valores para os códigos que estão no mapeamento
                             if codigo in acomp_codes:
                                 acomp_values[codigo][month_name] += valor
-                            if codigo in adicoes_codes:
-                                adicoes_values[codigo][month_name] += valor
-
+                            # Acumula os valores para o código 1785 (mesmo que não esteja em acomp_codes)
+                            if codigo == 1785:
+                                code1785_values[month_name] += valor
+            
+            # Para os meses finais de cada trimestre, atualiza o valor do código 1197
+            for mes in ["Março", "Junho", "Setembro", "Dezembro"]:
+                # Novo valor = (valor do código 1785) - (valor do código 1197 acumulado)
+                novo_valor = acomp_values[1197][mes] - code1785_values[mes]
+                st.write(f"Atualizando código 1197 para {mes}:  {acomp_values[1197][mes]} - {code1785_values[mes]} = {novo_valor}")
+                acomp_values[1197][mes] = novo_valor
+            
             # Carrega a planilha modelo
             workbook = openpyxl.load_workbook(modelo_file)
             
@@ -133,19 +125,9 @@ if st.button("Processar"):
                     st.write(f"Acomp.Resultado_2024: Preenchendo célula {celula} com o valor {valor} para o código {codigo} no mês {mes}")
                     sheet_acomp[celula].value = valor
 
-            # Insere Nome da Empresa e CNPJ nas células F7 e F8, respectivamente, na aba Acomp.Resultado_2024
+            # Insere Nome da Empresa e CNPJ nas células F7 e F8, respectivamente
             sheet_acomp["F7"].value = nome_empresa
             sheet_acomp["F8"].value = cnpj_empresa
-
-            # Preenche a aba "Adições 2024"
-            if "Adições 2024" not in workbook.sheetnames:
-                raise ValueError("A aba 'Adições 2024' não foi encontrada na planilha modelo.")
-            sheet_adicoes = workbook["Adições 2024"]
-            for codigo, mapping in mapeamento_adicoes.items():
-                for mes, celula in mapping.items():
-                    valor = adicoes_values[codigo][mes]
-                    st.write(f"Adições 2024: Preenchendo célula {celula} com o valor {valor} para o código {codigo} no mês {mes}")
-                    sheet_adicoes[celula].value = valor
 
             # Salva o arquivo processado em um buffer para download
             output = io.BytesIO()
