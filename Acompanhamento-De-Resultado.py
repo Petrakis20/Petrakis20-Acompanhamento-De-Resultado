@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import openpyxl
+import xlrd
 import io
 
 # --- Mapeamento LUCRO REAL (exemplo) ---
@@ -85,6 +86,53 @@ mapeamento_acomp_lucro_presumido = {
     }
 }
 
+mapeamento_acomp_lucro_real_estimativo = {
+    994: {
+        "Janeiro":   "C8",  "Fevereiro": "D8",  "Março":     "E8",
+        "Abril":     "F8",  "Maio":      "G8",  "Junho":     "H8",
+        "Julho":     "I8",  "Agosto":    "J8",  "Setembro":  "K8",
+        "Outubro":   "L8",  "Novembro":  "M8",  "Dezembro":  "N8"
+    },
+    1022: {
+        "Janeiro":   "C9",  "Fevereiro": "D9",  "Março":     "E9",
+        "Abril":     "F9",  "Maio":      "G9",  "Junho":     "H9",
+        "Julho":     "I9",  "Agosto":    "J9",  "Setembro":  "K9",
+        "Outubro":   "L9",  "Novembro":  "M9",  "Dezembro":  "N9"
+    },
+    1085: {
+        "Janeiro":   "C10", "Fevereiro": "D10", "Março":     "E10",
+        "Abril":     "F10", "Maio":      "G10", "Junho":     "H10",
+        "Julho":     "I10", "Agosto":    "J10", "Setembro":  "K10",
+        "Outubro":   "L10", "Novembro":  "M10", "Dezembro":  "N10"
+    },
+    1176: {
+        "Janeiro":   "C11", "Fevereiro": "D11", "Março":     "E11",
+        "Abril":     "F11", "Maio":      "G11", "Junho":     "H11",
+        "Julho":     "I11", "Agosto":    "J11", "Setembro":  "K11",
+        "Outubro":   "L11", "Novembro":  "M11", "Dezembro":  "N11"
+    },
+    5139: {
+        "Janeiro":   "C12", "Fevereiro": "D12", "Março":     "E12",
+        "Abril":     "F12", "Maio":      "G12", "Junho":     "H12",
+        "Julho":     "I12", "Agosto":    "J12", "Setembro":  "K12",
+        "Outubro":   "L12", "Novembro":  "M12", "Dezembro":  "N12"
+    },
+    1197: {
+        "Janeiro":   "C13", "Fevereiro": "D13", "Março":     "E13",
+        "Abril":     "F13", "Maio":      "G13", "Junho":     "H13",
+        "Julho":     "I13", "Agosto":    "J13", "Setembro":  "K13",
+        "Outubro":   "L13", "Novembro":  "M13", "Dezembro":  "N13"
+    },
+    3276: {
+        "Janeiro":   "C14", "Fevereiro": "D14", "Março":     "E14",
+        "Abril":     "F14", "Maio":      "G14", "Junho":     "H14",
+        "Julho":     "I14", "Agosto":    "J14", "Setembro":  "K14",
+        "Outubro":   "L14", "Novembro":  "M14", "Dezembro":  "N14"
+    }
+}
+
+
+
 # Meses finais de cada trimestre (para o cálculo 1785 - 1197)
 MESES_FINAIS_TRIMESTRE = ["Março", "Junho", "Setembro", "Dezembro"]
 
@@ -102,48 +150,71 @@ col_to_month = {
     "10/2024": "Outubro",  "11/2024": "Novembro",  "12/2024": "Dezembro"
 }
 
-def extrair_dados_balancete(balancete_path):
-    """Lê a planilha 'Balancete' e converte a coluna 'Código' para numérico."""
-    df = pd.read_excel(balancete_path, sheet_name='Balancete', engine='openpyxl')
+def extrair_dados_balancete(balancete_file):
+    """
+    Lê a planilha 'Balancete' e converte a coluna 'Código' para numérico.
+    Aceita .xls (xlrd) e .xlsx (openpyxl).
+    """
+    extension = balancete_file.name.split('.')[-1].lower()
+    if extension == 'xls':
+        # Necessário xlrd==1.2.0 para ler .xls
+        df = pd.read_excel(balancete_file, sheet_name='Balancete', engine='xlrd')
+    else:
+        df = pd.read_excel(balancete_file, sheet_name='Balancete', engine='openpyxl')
+    
     df.columns = [col.strip() if isinstance(col, str) else col for col in df.columns]
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
 
-# -------------- Início da Interface Streamlit --------------
-st.title("Processamento de Balancetes - Lucro Real e Lucro Presumido")
+# -----------------------------------------------------
+# INÍCIO DA INTERFACE STREAMLIT
+# -----------------------------------------------------
+st.title("Processamento de Balancetes - Múltiplos Modelos")
 
-# Campo para selecionar o regime de tributação
+# Agora, oferecemos três opções:
 opcao_regime = st.radio(
-    "Selecione o Regime de Tributação:",
-    ["Lucro Real", "Lucro Presumido"]
+    "Selecione o Modelo/Regime:",
+    ["Lucro Real", "Lucro Presumido", "Lucro Real Estimativo"]
 )
 
 # Campos para inserir Nome da Empresa e CNPJ
 nome_empresa = st.text_input("Nome da Empresa")
 cnpj_empresa = st.text_input("CNPJ da Empresa")
 
-# Upload dos arquivos
-balancete_files = st.file_uploader("Faça upload dos arquivos de Balancete", type=['xlsx'], accept_multiple_files=True)
-modelo_file = st.file_uploader("Faça upload do modelo de planilha", type=['xlsx'])
+# Permite arquivos .xls e .xlsx
+balancete_files = st.file_uploader(
+    "Faça upload dos arquivos de Balancete", 
+    type=['xls', 'xlsx'], 
+    accept_multiple_files=True
+)
+# Modelo de planilha
+modelo_file = st.file_uploader("Faça upload do modelo de planilha (apenas .xlsx)", type=['xlsx'])
 
 if st.button("Processar"):
     if balancete_files and modelo_file and nome_empresa and cnpj_empresa:
         try:
-            # Escolhe o dicionário de mapeamento de acordo com o regime
+            # Escolhe o dicionário de mapeamento e a aba-alvo
             if opcao_regime == "Lucro Real":
                 mapeamento_acomp = mapeamento_acomp_lucro_real
-            else:
+                sheet_name = "Acomp.Resultado_2024"
+                usar_ajuste_1785 = True  # Se ainda quiser manter a lógica 1785→1197
+            elif opcao_regime == "Lucro Presumido":
                 mapeamento_acomp = mapeamento_acomp_lucro_presumido
+                sheet_name = "Acomp.Resultado_2024"
+                usar_ajuste_1785 = True  # Se ainda quiser manter a lógica 1785→1197
+            else:  # Lucro Real Estimativo
+                mapeamento_acomp = mapeamento_acomp_lucro_real_estimativo
+                sheet_name = "Pós retificação Final"
+                usar_ajuste_1785 = False  # Não aplicar lógica 1785→1197
             
-            # Lista de códigos que serão preenchidos (chaves do dicionário escolhido)
+            # Cria lista de códigos a serem acumulados (chaves do mapeamento)
             acomp_codes = list(mapeamento_acomp.keys())
-
-            # Inicializa dicionário de acumulação para cada código e mês
+            
+            # Inicializa os acumuladores de valores
             acomp_values = {codigo: {mes: 0 for mes in months_list} for codigo in acomp_codes}
-            # Acumulador para o código 1785
-            code1785_values = {mes: 0 for mes in months_list}
+            code1785_values = {mes: 0 for mes in months_list}  # Usado apenas se usar_ajuste_1785 for True
 
-            # Lê cada arquivo e acumula os valores
+            # Lê cada arquivo e acumula
             for balancete_file in balancete_files:
                 df = extrair_dados_balancete(balancete_file)
                 st.write(f"Dados extraídos do arquivo {balancete_file.name}:")
@@ -154,52 +225,52 @@ if st.button("Processar"):
                     if pd.isna(codigo):
                         continue
                     for col in df.columns:
-                        if col in col_to_month:  # Se for uma coluna de mês
+                        if col in col_to_month:  # coluna de mês
                             mes_nome = col_to_month[col]
                             valor = row[col]
                             valor = abs(valor) if pd.notna(valor) else 0
-
+                            
                             if codigo in acomp_codes:
                                 acomp_values[codigo][mes_nome] += valor
-                            if codigo == 1785:
+                            if usar_ajuste_1785 and codigo == 1785:
                                 code1785_values[mes_nome] += valor
-
-            # Ajuste para o código 1197 nos meses finais de cada trimestre
-            if 1197 in acomp_codes:
+            
+            # Ajuste 1785→1197 somente se usar_ajuste_1785 == True
+            if usar_ajuste_1785 and 1197 in acomp_codes:
+                MESES_FINAIS_TRIMESTRE = ["Março", "Junho", "Setembro", "Dezembro"]
                 for mes in MESES_FINAIS_TRIMESTRE:
-                    # novo_valor = valor_1785 - valor_1197
-                    novo_valor = code1785_values[mes] - acomp_values[1197][mes]
-                    st.write(f"Ajuste 1197 ({mes}): 1785({code1785_values[mes]}) - 1197({acomp_values[1197][mes]}) = {novo_valor}")
+                    novo_valor = acomp_values[1197][mes] - code1785_values[mes]
+                    st.write(f"Ajuste 1197 ({mes}): 1197({acomp_values[1197][mes]}) -  1785({code1785_values[mes]}) = {novo_valor}")
                     acomp_values[1197][mes] = novo_valor
 
             # Carrega a planilha modelo
             workbook = openpyxl.load_workbook(modelo_file)
+
+            # Verifica se a aba existe
+            if sheet_name not in workbook.sheetnames:
+                raise ValueError(f"A aba '{sheet_name}' não foi encontrada na planilha modelo.")
             
-            # Verifica se a aba "Acomp.Resultado_2024" existe
-            if "Acomp.Resultado_2024" not in workbook.sheetnames:
-                raise ValueError("A aba 'Acomp.Resultado_2024' não foi encontrada na planilha modelo.")
+            sheet_acomp = workbook[sheet_name]
             
-            sheet_acomp = workbook["Acomp.Resultado_2024"]
-            
-            # Preenche a aba "Acomp.Resultado_2024" de acordo com o mapeamento escolhido
+            # Preenche as células
             for codigo, mapping in mapeamento_acomp.items():
                 for mes, celula in mapping.items():
                     valor = acomp_values[codigo][mes]
                     st.write(f"[{opcao_regime}] Preenchendo célula {celula} com {valor} (cód {codigo}, {mes})")
                     sheet_acomp[celula].value = valor
 
-            # Insere Nome da Empresa e CNPJ
+            # Preenche nome e CNPJ
+            # Ajuste as células conforme seu template. Exemplo:
             sheet_acomp["F7"].value = nome_empresa
             sheet_acomp["F8"].value = cnpj_empresa
 
-            # Salva o arquivo em buffer
+            # Salva em buffer
             output = io.BytesIO()
             workbook.save(output)
             output.seek(0)
 
-            # Nome do arquivo final
+            # Nome final do arquivo
             file_name = f"Acompanhamento de Resultado - {nome_empresa}.xlsx"
-            
             st.success("Processamento concluído com sucesso!")
             st.download_button(
                 label="Baixar Arquivo Processado",
