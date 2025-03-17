@@ -2,3 +2,5 @@ streamlit>=1.20
 streamlit-authenticator>=0.1.5  # Atualizado para a versão mais recente
 pandas
 openpyxl
+xlrd==1.2.0
+
