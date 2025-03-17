@@ -169,7 +169,7 @@ def extrair_dados_balancete(balancete_file):
 # -----------------------------------------------------
 # INÍCIO DA INTERFACE STREAMLIT
 # -----------------------------------------------------
-st.title("Processamento de Balancetes - Múltiplos Modelos")
+st.title("Acompanhamento de Resuldatos JCA Contadores")
 
 # Agora, oferecemos três opções:
 opcao_regime = st.radio(
