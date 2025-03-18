@@ -4,6 +4,11 @@ import openpyxl
 import xlrd
 import io
 
+# Monkey-patch para "enganar" o Pandas quanto à versão do xlrd
+if xlrd.__version__ == "1.2.0":
+    xlrd.__version__ = "2.0.1"
+
+
 # --- Mapeamento LUCRO REAL (exemplo) ---
 mapeamento_acomp_lucro_real = {
     994:  {"Janeiro": "D17", "Fevereiro": "E17", "Março": "F17", "Abril": "D54", "Maio": "E54", "Junho": "F54",
@@ -150,14 +155,10 @@ col_to_month = {
     "10/2024": "Outubro",  "11/2024": "Novembro",  "12/2024": "Dezembro"
 }
 
+
 def extrair_dados_balancete(balancete_file):
-    """
-    Lê a planilha 'Balancete' e converte a coluna 'Código' para numérico.
-    Aceita .xls (xlrd) e .xlsx (openpyxl).
-    """
     extension = balancete_file.name.split('.')[-1].lower()
     if extension == 'xls':
-        # Necessário xlrd==1.2.0 para ler .xls
         df = pd.read_excel(balancete_file, sheet_name='Balancete', engine='xlrd')
     else:
         df = pd.read_excel(balancete_file, sheet_name='Balancete', engine='openpyxl')
@@ -165,7 +166,6 @@ def extrair_dados_balancete(balancete_file):
     df.columns = [col.strip() if isinstance(col, str) else col for col in df.columns]
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
-
 # -----------------------------------------------------
 # INÍCIO DA INTERFACE STREAMLIT
 # -----------------------------------------------------
