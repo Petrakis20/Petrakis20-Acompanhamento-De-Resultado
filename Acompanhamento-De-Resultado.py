@@ -91,6 +91,32 @@ mapeamento_acomp_lucro_presumido = {
     }
 }
 
+# Este dicionário trata dos códigos extras.
+# A chave "1015_1981" representa a soma dos códigos 1015 e 1981.
+mapeamento_extra_presumido = {
+    "1015_1981": {
+        "Q1": "J18", "Q2": "J57", "Q3": "J96", "Q4": "J135"
+    },
+    1043: {
+        "Q1": "J19", "Q2": "J58", "Q3": "J97", "Q4": "J136"
+    },
+    2919: {
+        "Q1": "J20", "Q2": "J59", "Q3": "J98", "Q4": "J137"
+    },
+    4429: {
+        "Q1": "J21", "Q2": "J60", "Q3": "J99", "Q4": "J138"
+    },
+    1904: {
+        "Q1": "J25", "Q2": "J64", "Q3": "J103", "Q4": "J142"
+    },
+    6196: {
+        "Q1": "J26", "Q2": "J65", "Q3": "J104", "Q4": "J143"
+    },
+    # 1113: {
+    #     "Q1": "J29", "Q2": "J68", "Q3": "J107", "Q4": "J146"
+    # }
+}
+
 mapeamento_acomp_lucro_real_estimativo = {
     994: {
         "Janeiro":   "C8",  "Fevereiro": "D8",  "Março":     "E8",
@@ -137,6 +163,13 @@ mapeamento_acomp_lucro_real_estimativo = {
 }
 
 
+# Mapeamento de meses para trimestre
+month_to_quarter = {
+    "Janeiro": "Q1", "Fevereiro": "Q1", "Março": "Q1",
+    "Abril": "Q2", "Maio": "Q2", "Junho": "Q2",
+    "Julho": "Q3", "Agosto": "Q3", "Setembro": "Q3",
+    "Outubro": "Q4", "Novembro": "Q4", "Dezembro": "Q4"
+}
 
 # Meses finais de cada trimestre (para o cálculo 1785 - 1197)
 MESES_FINAIS_TRIMESTRE = ["Março", "Junho", "Setembro", "Dezembro"]
@@ -155,23 +188,24 @@ col_to_month = {
     "10/2024": "Outubro",  "11/2024": "Novembro",  "12/2024": "Dezembro"
 }
 
-
 def extrair_dados_balancete(balancete_file):
+    """
+    Lê a planilha 'Balancete' e converte a coluna 'Código' para numérico.
+    Aceita .xls (xlrd) e .xlsx (openpyxl).
+    """
     extension = balancete_file.name.split('.')[-1].lower()
     if extension == 'xls':
         df = pd.read_excel(balancete_file, sheet_name='Balancete', engine='xlrd')
     else:
         df = pd.read_excel(balancete_file, sheet_name='Balancete', engine='openpyxl')
-    
     df.columns = [col.strip() if isinstance(col, str) else col for col in df.columns]
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
-# -----------------------------------------------------
-# INÍCIO DA INTERFACE STREAMLIT
-# -----------------------------------------------------
-st.title("Acompanhamento de Resuldatos JCA Contadores 2.0")
 
-# Agora, oferecemos três opções:
+# -------------- Início da Interface Streamlit --------------
+st.title("Acompanhamento de Rsultado JCA Contadores")
+
+# Campo para selecionar o modelo/regime
 opcao_regime = st.radio(
     "Selecione o Modelo/Regime:",
     ["Lucro Real", "Lucro Presumido", "Lucro Real Estimativo"]
@@ -181,95 +215,138 @@ opcao_regime = st.radio(
 nome_empresa = st.text_input("Nome da Empresa")
 cnpj_empresa = st.text_input("CNPJ da Empresa")
 
-# Permite arquivos .xls e .xlsx
+# Upload dos arquivos de balancete (.xls e .xlsx)
 balancete_files = st.file_uploader(
     "Faça upload dos arquivos de Balancete", 
     type=['xls', 'xlsx'], 
     accept_multiple_files=True
 )
-# Modelo de planilha
+# Upload do modelo (apenas .xlsx)
 modelo_file = st.file_uploader("Faça upload do modelo de planilha (apenas .xlsx)", type=['xlsx'])
 
 if st.button("Processar"):
     if balancete_files and modelo_file and nome_empresa and cnpj_empresa:
         try:
-            # Escolhe o dicionário de mapeamento e a aba-alvo
+            # Define variáveis de mapeamento e aba conforme o regime escolhido
             if opcao_regime == "Lucro Real":
                 mapeamento_acomp = mapeamento_acomp_lucro_real
                 sheet_name = "Acomp.Resultado_2024"
-                usar_ajuste_1785 = True  # Se ainda quiser manter a lógica 1785→1197
+                usar_ajuste_1785 = True
+                processar_extra = False
             elif opcao_regime == "Lucro Presumido":
                 mapeamento_acomp = mapeamento_acomp_lucro_presumido
                 sheet_name = "Acomp.Resultado_2024"
-                usar_ajuste_1785 = True  # Se ainda quiser manter a lógica 1785→1197
+                usar_ajuste_1785 = True  # Mantém a lógica 1785→1197 se existir no mapeamento normal
+                processar_extra = True  # Processa os códigos extras definidos abaixo
             else:  # Lucro Real Estimativo
-                mapeamento_acomp = mapeamento_acomp_lucro_real_estimativo
+                # Para esse modelo, usamos outro mapeamento (não incluímos a lógica extra)
+                # Suponha que você já tenha definido mapeamento_acomp_lucro_real_estimativo
+                mapeamento_acomp = {}  # Substitua pelo seu mapeamento real para este modelo
                 sheet_name = "Pós retificação Final"
-                usar_ajuste_1785 = False  # Não aplicar lógica 1785→1197
-            
-            # Cria lista de códigos a serem acumulados (chaves do mapeamento)
-            acomp_codes = list(mapeamento_acomp.keys())
-            
-            # Inicializa os acumuladores de valores
-            acomp_values = {codigo: {mes: 0 for mes in months_list} for codigo in acomp_codes}
-            code1785_values = {mes: 0 for mes in months_list}  # Usado apenas se usar_ajuste_1785 for True
+                usar_ajuste_1785 = False
+                processar_extra = False
 
-            # Lê cada arquivo e acumula
+            # Lista dos códigos que serão processados no mapeamento "normal"
+            acomp_codes = list(mapeamento_acomp.keys())
+
+            # Inicializa os acumuladores para os códigos do mapeamento normal
+            acomp_values = {codigo: {mes: 0 for mes in months_list} for codigo in acomp_codes}
+            # Se necessário, acumula valores para o código 1785 (usado na lógica normal)
+            code1785_values = {mes: 0 for mes in months_list}
+
+            # Inicializa os acumuladores para os códigos extras (somente para Lucro Presumido)
+            extra_values = {
+                "1015_1981": {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0},
+                1043: {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0},
+                2919: {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0},
+                4429: {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0},
+                1904: {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0},
+                6196: {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0},
+                # 1113: {"Q1": 0, "Q2": 0, "Q3": 0, "Q4": 0}
+            }
+            # Define o mapeamento extra para Lucro Presumido (novos códigos)
+            # A chave "1015_1981" representa a soma dos códigos 1015 e 1981.
+            mapeamento_extra_presumido = {
+                "1015_1981": {"Q1": "J18", "Q2": "J57", "Q3": "J96", "Q4": "J135"},
+                1043: {"Q1": "J19", "Q2": "J58", "Q3": "J97", "Q4": "J136"},
+                2919: {"Q1": "J20", "Q2": "J59", "Q3": "J98", "Q4": "J137"},
+                4429: {"Q1": "J21", "Q2": "J60", "Q3": "J99", "Q4": "J138"},
+                1904: {"Q1": "J25", "Q2": "J64", "Q3": "J103", "Q4": "J142"},
+                6196: {"Q1": "J26", "Q2": "J65", "Q3": "J104", "Q4": "J143"},
+                # 1113: {"Q1": "J29", "Q2": "J68", "Q3": "J107", "Q4": "J146"}
+            }
+            # Mapeamento de mês para trimestre
+            month_to_quarter = {
+                "Janeiro": "Q1", "Fevereiro": "Q1", "Março": "Q1",
+                "Abril": "Q2", "Maio": "Q2", "Junho": "Q2",
+                "Julho": "Q3", "Agosto": "Q3", "Setembro": "Q3",
+                "Outubro": "Q4", "Novembro": "Q4", "Dezembro": "Q4"
+            }
+
+            # Processa cada arquivo de balancete
             for balancete_file in balancete_files:
                 df = extrair_dados_balancete(balancete_file)
                 st.write(f"Dados extraídos do arquivo {balancete_file.name}:")
                 st.write(df)
-                
                 for _, row in df.iterrows():
                     codigo = row['Código']
                     if pd.isna(codigo):
                         continue
                     for col in df.columns:
-                        if col in col_to_month:  # coluna de mês
+                        if col in col_to_month:  # Coluna de mês
                             mes_nome = col_to_month[col]
                             valor = row[col]
                             valor = abs(valor) if pd.notna(valor) else 0
-                            
+                            # Acumula para os códigos do mapeamento normal
                             if codigo in acomp_codes:
                                 acomp_values[codigo][mes_nome] += valor
                             if usar_ajuste_1785 and codigo == 1785:
                                 code1785_values[mes_nome] += valor
-            
-            # Ajuste 1785→1197 somente se usar_ajuste_1785 == True
+                            
+                            # Se o regime é Lucro Presumido e processar_extra=True, acumula os códigos extras
+                            if processar_extra:
+                                qtr = month_to_quarter[mes_nome]
+                                if codigo in [1015, 1981]:
+                                    extra_values["1015_1981"][qtr] += valor
+                                elif codigo in [1043, 2919, 4429, 1904, 6196]: ###, 1113
+                                    extra_values[codigo][qtr] += valor
+
+            # Ajuste para o código 1197 nos meses finais do trimestre, se aplicável
             if usar_ajuste_1785 and 1197 in acomp_codes:
-                MESES_FINAIS_TRIMESTRE = ["Março", "Junho", "Setembro", "Dezembro"]
-                for mes in MESES_FINAIS_TRIMESTRE:
-                    novo_valor = acomp_values[1197][mes] - code1785_values[mes]
-                    st.write(f"Ajuste 1197 ({mes}): 1197({acomp_values[1197][mes]}) -  1785({code1785_values[mes]}) = {novo_valor}")
+                for mes in ["Março", "Junho", "Setembro", "Dezembro"]:
+                    novo_valor = code1785_values[mes] - acomp_values[1197][mes]
+                    st.write(f"Ajuste 1197 ({mes}): 1785({code1785_values[mes]}) - 1197({acomp_values[1197][mes]}) = {novo_valor}")
                     acomp_values[1197][mes] = novo_valor
 
-            # Carrega a planilha modelo
+            # Carrega a planilha modelo (.xlsx)
             workbook = openpyxl.load_workbook(modelo_file)
-
-            # Verifica se a aba existe
             if sheet_name not in workbook.sheetnames:
                 raise ValueError(f"A aba '{sheet_name}' não foi encontrada na planilha modelo.")
-            
             sheet_acomp = workbook[sheet_name]
-            
-            # Preenche as células
+
+            # Preenche os valores do mapeamento normal
             for codigo, mapping in mapeamento_acomp.items():
                 for mes, celula in mapping.items():
-                    valor = acomp_values[codigo][mes]
+                    valor = acomp_values[codigo].get(mes, 0)
                     st.write(f"[{opcao_regime}] Preenchendo célula {celula} com {valor} (cód {codigo}, {mes})")
                     sheet_acomp[celula].value = valor
 
-            # Preenche nome e CNPJ
-            # Ajuste as células conforme seu template. Exemplo:
+            # Se o regime é Lucro Presumido, preenche os valores dos códigos extras
+            if opcao_regime == "Lucro Presumido" and processar_extra:
+                for key, mapping in mapeamento_extra_presumido.items():
+                    for trimestre, celula in mapping.items():
+                        valor = extra_values[key][trimestre]
+                        st.write(f"[Lucro Presumido Extra] Preenchendo célula {celula} com {valor} (chave {key}, {trimestre})")
+                        sheet_acomp[celula].value = valor
+
+            # Insere Nome da Empresa e CNPJ (mesmo para os modelos que usam essa aba)
             sheet_acomp["F7"].value = nome_empresa
             sheet_acomp["F8"].value = cnpj_empresa
 
-            # Salva em buffer
+            # Salva o arquivo processado em buffer para download
             output = io.BytesIO()
             workbook.save(output)
             output.seek(0)
-
-            # Nome final do arquivo
             file_name = f"Acompanhamento de Resultado - {nome_empresa}.xlsx"
             st.success("Processamento concluído com sucesso!")
             st.download_button(
