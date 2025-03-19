@@ -39,12 +39,11 @@ try:
     st.download_button(
         label="Manual",
         data=manual_data,
-        file_name="./Passo a Passo Acompanhamento de resultado.pdf",
+        file_name="Passo a Passo Acompanhamento de resultado.pdf",
         mime="application/pdf"
     )
 except Exception as e:
     st.error("Manual não disponível no momento.")
-
 
 opcao_regime = st.radio(
     "Selecione o Modelo/Regime:",
@@ -62,17 +61,18 @@ modelo_file = st.file_uploader("Faça upload do modelo de planilha (apenas .xlsx
 if st.button("Processar"):
     if balancete_files and modelo_file and nome_empresa and cnpj_empresa:
         try:
+            # Define variáveis de mapeamento e aba conforme o regime escolhido
             if opcao_regime == "Lucro Real":
                 mapeamento_acomp = mapeamento_acomp_lucro_real
                 sheet_name = "Acomp.Resultado_2024"
-                usar_ajuste_1785 = True
+                usar_ajuste_1785 = True   # Usar ajuste somente para Lucro Real
                 processar_extra = False
             elif opcao_regime == "Lucro Presumido":
                 mapeamento_acomp = mapeamento_acomp_lucro_presumido
                 sheet_name = "Acomp.Resultado_2024"
-                usar_ajuste_1785 = True
-                processar_extra = True
-            else:
+                usar_ajuste_1785 = False  # Não aplicar ajuste para Lucro Presumido
+                processar_extra = True   # Processar os códigos extras
+            else:  # Lucro Real Estimativo
                 mapeamento_acomp = mapeamento_acomp_lucro_real_estimativo
                 sheet_name = "Pós retificação Final"
                 usar_ajuste_1785 = False
@@ -114,10 +114,12 @@ if st.button("Processar"):
                                 elif codigo in [1043, 2919, 4429, 1904, 6196]:
                                     extra_values[codigo][qtr] += valor
 
+            # Ajuste para o código 1197: Inverter a operação para evitar números negativos
+            # Aplicado somente para Lucro Real
             if usar_ajuste_1785 and 1197 in acomp_codes:
                 for mes in ["Março", "Junho", "Setembro", "Dezembro"]:
-                    novo_valor = code1785_values[mes] - acomp_values[1197][mes]
-                    st.write(f"Ajuste 1197 ({mes}): 1785({code1785_values[mes]}) - 1197({acomp_values[1197][mes]}) = {novo_valor}")
+                    novo_valor = acomp_values[1197][mes] - code1785_values[mes]
+                    st.write(f"Ajuste 1197 ({mes}): {acomp_values[1197][mes]} - 1785({code1785_values[mes]}) = {novo_valor}")
                     acomp_values[1197][mes] = novo_valor
 
             workbook = openpyxl.load_workbook(modelo_file)
