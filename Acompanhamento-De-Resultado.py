@@ -29,7 +29,22 @@ def extrair_dados_balancete(balancete_file):
     df['Código'] = pd.to_numeric(df['Código'], errors='coerce')
     return df
 
+st.image("logo.png", width=100)
 st.title("Acompanhamento de Resultado JCA Contadores")
+
+# Botão para baixar o Manual em PDF
+try:
+    with open("./Passo a Passo Acompanhamento de resultado.pdf", "rb") as pdf_file:
+        manual_data = pdf_file.read()
+    st.download_button(
+        label="Manual",
+        data=manual_data,
+        file_name="./Passo a Passo Acompanhamento de resultado.pdf",
+        mime="application/pdf"
+    )
+except Exception as e:
+    st.error("Manual não disponível no momento.")
+
 
 opcao_regime = st.radio(
     "Selecione o Modelo/Regime:",
