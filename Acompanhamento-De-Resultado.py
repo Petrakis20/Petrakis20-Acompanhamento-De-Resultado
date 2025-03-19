@@ -33,6 +33,27 @@ st.image("logo.png", width=100)
 st.title("Acompanhamento de Resultado JCA Contadores")
 
 # Botão para baixar o Manual em PDF
+st.markdown(
+    """
+    <style>
+    /* Alvo do botão de download do manual */
+    div.stDownloadButton > button {
+         background-color: #FF0000;
+         color: white;
+         border: 1px solid red;
+         padding: 8px 16px;
+         font-size: 16px;
+         cursor: pointer;
+         border-radius: 4px;
+    }
+    div.stDownloadButton > button:hover {
+        color: #F00;
+        background-color: #FFF;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 try:
     with open("./Passo a Passo Acompanhamento de resultado.pdf", "rb") as pdf_file:
         manual_data = pdf_file.read()
