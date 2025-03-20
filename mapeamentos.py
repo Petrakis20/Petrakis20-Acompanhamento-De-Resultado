@@ -41,10 +41,12 @@ mapeamento_acomp_lucro_presumido = {
           "Abril": "D59", "Maio": "E59", "Junho": "F59",
           "Julho": "D98", "Agosto": "E98", "Setembro": "F98",
           "Outubro": "D137", "Novembro": "E137", "Dezembro": "F137"},
+
     1197: {"Janeiro": "D21", "Fevereiro": "E21", "Março": "F21",
           "Abril": "D60", "Maio": "E60", "Junho": "F60",
-          "Julho": "D99", "Agosto": "E99", "Setembro": "D99",
+          "Julho": "D99", "Agosto": "E99", "Setembro": "F99",
           "Outubro": "D138", "Novembro": "E138", "Dezembro": "F138"},
+
     3276: {"Janeiro": "D22", "Fevereiro": "E22", "Março": "F22",
           "Abril": "D61", "Maio": "E61", "Junho": "F61",
           "Julho": "D100", "Agosto": "E100", "Setembro": "F100",
