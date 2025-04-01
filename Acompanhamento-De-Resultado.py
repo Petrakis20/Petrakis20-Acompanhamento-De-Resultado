@@ -32,7 +32,7 @@ def extrair_dados_balancete(balancete_file):
 st.image("logo.png", width=100)
 st.title("Acompanhamento de Resultado JCA Contadores")
 
-# Botão para baixar o Manual em PDF
+# Botão para baixar o Manual em PDF (botão estilizado em vermelho)
 st.markdown(
     """
     <style>
@@ -49,7 +49,7 @@ st.markdown(
     div.stDownloadButton > button:hover {
         color: #F00;
         background-color: #FFF;
-        }
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -65,6 +65,9 @@ try:
     )
 except Exception as e:
     st.error("Manual não disponível no momento.")
+
+# Novo campo para selecionar o ano da operação
+ano_operacao = st.radio("Selecione o Ano da Operação:", ["2024", "2025"])
 
 opcao_regime = st.radio(
     "Selecione o Modelo/Regime:",
@@ -85,19 +88,22 @@ if st.button("Processar"):
             # Define variáveis de mapeamento e aba conforme o regime escolhido
             if opcao_regime == "Lucro Real":
                 mapeamento_acomp = mapeamento_acomp_lucro_real
-                sheet_name = "Acomp.Resultado_2024"
-                usar_ajuste_1785 = True   # Usar ajuste somente para Lucro Real
+                usar_ajuste_1785 = True   # Aplica ajuste somente para Lucro Real
                 processar_extra = False
             elif opcao_regime == "Lucro Presumido":
                 mapeamento_acomp = mapeamento_acomp_lucro_presumido
-                sheet_name = "Acomp.Resultado_2024"
-                usar_ajuste_1785 = False  # Não aplicar ajuste para Lucro Presumido
-                processar_extra = True   # Processar os códigos extras
+                usar_ajuste_1785 = False  # Não aplica ajuste para Lucro Presumido
+                processar_extra = True   # Processa os códigos extras
             else:  # Lucro Real Estimativo
                 mapeamento_acomp = mapeamento_acomp_lucro_real_estimativo
-                sheet_name = "Pós retificação Final"
                 usar_ajuste_1785 = False
                 processar_extra = False
+
+            # Independente do regime, a sheet a ser aberta dependerá do ano selecionado
+            if ano_operacao == "2024":
+                sheet_name = "Acomp.Resultado_2024"
+            else:
+                sheet_name = "Acomp.Resultado_2025"
 
             acomp_codes = list(mapeamento_acomp.keys())
             acomp_values = {codigo: {mes: 0 for mes in months_list} for codigo in acomp_codes}
@@ -135,8 +141,8 @@ if st.button("Processar"):
                                 elif codigo in [1043, 2919, 4429, 1904, 6196]:
                                     extra_values[codigo][qtr] += valor
 
-            # Ajuste para o código 1197: Inverter a operação para evitar números negativos
-            # Aplicado somente para Lucro Real
+            # Ajuste para o código 1197: Inverter a operação para evitar números negativos,
+            # aplicado somente para Lucro Real
             if usar_ajuste_1785 and 1197 in acomp_codes:
                 for mes in ["Março", "Junho", "Setembro", "Dezembro"]:
                     novo_valor = acomp_values[1197][mes] - code1785_values[mes]
