@@ -123,5 +123,9 @@ col_to_month = {
     "01/2024": "Janeiro", "02/2024": "Fevereiro", "03/2024": "Março",
     "04/2024": "Abril", "05/2024": "Maio", "06/2024": "Junho",
     "07/2024": "Julho", "08/2024": "Agosto", "09/2024": "Setembro",
-    "10/2024": "Outubro", "11/2024": "Novembro", "12/2024": "Dezembro"
+    "10/2024": "Outubro", "11/2024": "Novembro", "12/2024": "Dezembro",
+    "01/2025": "Janeiro", "02/2025": "Fevereiro", "03/2025": "Março",
+    "04/2025": "Abril", "05/2025": "Maio", "06/2025": "Junho",
+    "07/2025": "Julho", "08/2025": "Agosto", "09/2025": "Setembro",
+    "10/2025": "Outubro", "11/2025": "Novembro", "12/2025": "Dezembro"
 }
