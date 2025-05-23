@@ -71,7 +71,7 @@ ano_operacao = st.radio("Selecione o Ano da Operação:", ["2024", "2025"])
 
 opcao_regime = st.radio(
     "Selecione o Modelo/Regime:",
-    ["Lucro Real", "Lucro Presumido", "Lucro Real Estimativa"]
+    ["Lucro Real", "Lucro Presumido", "Lucro Real Estimativo"]
 )
 
 nome_empresa = st.text_input("Nome da Empresa")
