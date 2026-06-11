@@ -1,0 +1,27 @@
+# Ambiente virtual Python
+.venv/
+venv/
+env/
+
+# Backups
+backups/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Arquivos temporários e de SO
+.DS_Store
+Thumbs.db
+
+# Arquivos de saída de teste (gerados automaticamente)
+NOVO_FORMATO/saida_*.xlsx
+NOVO_FORMATO/otimizados/
+
+# Banco de dados local
+usuarios.db
+
+# Variáveis de ambiente (credenciais)
+Alterdata_BI/.env
+.env
