@@ -1,0 +1,7 @@
+Outras deduções: A soma está incorreta, pois está faltando contas a serem somadas.
+    Contas: "3.2.01.01.02", "3.2.01.01.03", "3.2.01.01.04", "3.2.01.01.05", "3.2.01.01.06", "3.2.01.01.07", "3.2.01.01.09", "3.2.01.01.10", "3.2.01.01.12", "3.2.01.01.13", "3.2.01.01.14", "3.2.01.01.15", "3.2.01.01.16", "3.2.01.01.17", "3.2.01.01.18
+Março: 2627298,48
+
+
+Diferenças nas contas de Despesas de R$0,01, conta: 5
+Resultado financeiro com diferença de R$0,01, conta: 7

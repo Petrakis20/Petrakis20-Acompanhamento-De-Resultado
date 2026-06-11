@@ -74,8 +74,40 @@ opcao_regime = st.radio(
     ["Lucro Real", "Lucro Presumido", "Lucro Real Estimativo"]
 )
 
+import streamlit.components.v1 as components
+
 nome_empresa = st.text_input("Nome da Empresa")
-cnpj_empresa = st.text_input("CNPJ da Empresa")
+cnpj_empresa = st.text_input("CNPJ da Empresa", max_chars=18)
+
+components.html(
+    """
+    <script>
+    const doc = window.parent.document;
+    const inputs = doc.querySelectorAll('input');
+    inputs.forEach(input => {
+        if (input.getAttribute('aria-label') === 'CNPJ da Empresa' && !input.dataset.masked) {
+            input.dataset.masked = 'true';
+            input.addEventListener('input', function(e) {
+                let v = e.target.value.replace(/\\D/g, '');
+                if (v.length > 14) v = v.substring(0, 14);
+                v = v.replace(/^(\\d{2})(\\d)/, '$1.$2');
+                v = v.replace(/^(\\d{2})\\.(\\d{3})(\\d)/, '$1.$2.$3');
+                v = v.replace(/\\.(\\d{3})(\\d)/, '.$1/$2');
+                v = v.replace(/(\\d{4})(\\d)/, '$1-$2');
+                
+                if (e.target.value !== v) {
+                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+                    nativeInputValueSetter.call(input, v);
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            });
+        }
+    });
+    </script>
+    """,
+    height=0,
+    width=0
+)
 
 balancete_files = st.file_uploader(
     "Faça upload dos arquivos de Balancete", type=['xls', 'xlsx'], accept_multiple_files=True

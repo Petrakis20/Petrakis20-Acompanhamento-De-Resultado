@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "description": "Mapeamentos do novo formato de balancete por classificacao contabil.",
+  "input": {
+    "type": "balancete_xls_report",
+    "sheet": "Report",
+    "classification_source": "descricao",
+    "classification_pattern": "\\[(.*?)\\]",
+    "default_value_column": "movimento",
+    "columns": {
+      "description": "A",
+      "saldo_anterior": "E",
+      "debito": "F",
+      "credito": "G",
+      "movimento": "H",
+      "saldo_atual": "I"
+    }
+  },
+  "months": {
+    "janeiro": { "number": 1, "quarter": "Q1" },
+    "fevereiro": { "number": 2, "quarter": "Q1" },
+    "marco": { "number": 3, "quarter": "Q1" },
+    "abril": { "number": 4, "quarter": "Q2" },
+    "maio": { "number": 5, "quarter": "Q2" },
+    "junho": { "number": 6, "quarter": "Q2" },
+    "julho": { "number": 7, "quarter": "Q3" },
+    "agosto": { "number": 8, "quarter": "Q3" },
+    "setembro": { "number": 9, "quarter": "Q3" },
+    "outubro": { "number": 10, "quarter": "Q4" },
+    "novembro": { "number": 11, "quarter": "Q4" },
+    "dezembro": { "number": 12, "quarter": "Q4" }
+  },
+  "models": {
+    "lucro_presumido": {
+      "template_file": "NOVO_FORMATO/otimizados/Atualização de Acompanhamento LP versão 2 - otimizado.xlsx",
+      "result_sheet": "Acomp.Resultado_2026",
+      "company_cells": {
+        "nome": "H6",
+        "cnpj": "H7"
+      },
+      "month_columns_by_quarter": {
+        "Q1": { "janeiro": "D", "fevereiro": "F", "marco": "H" },
+        "Q2": { "abril": "D", "maio": "F", "junho": "H" },
+        "Q3": { "julho": "D", "agosto": "F", "setembro": "H" },
+        "Q4": { "outubro": "D", "novembro": "F", "dezembro": "H" }
+      },
+      "result_mappings": [
+        { "id": "receita_venda_mercadorias", "classifications": ["3.1.01.01.01"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 17, "Q2": 67, "Q3": 117, "Q4": 167 } },
+        { "id": "receita_venda_produtos", "classifications": ["3.1.01.01.03"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 18, "Q2": 68, "Q3": 118, "Q4": 168 } },
+        { "id": "receita_transportes", "classifications": ["3.1.01.01.04"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 19, "Q2": 69, "Q3": 119, "Q4": 169 } },
+        { "id": "receita_servicos", "classifications": ["3.1.01.01.02"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 20, "Q2": 70, "Q3": 120, "Q4": 170 } },
+        { "id": "receita_locacao", "classifications": ["3.1.01.01.05"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 21, "Q2": 71, "Q3": 121, "Q4": 171 } },
+        { "id": "receita_financeira", "classifications": ["3.1.01.01.06"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 22, "Q2": 72, "Q3": 122, "Q4": 172 } },
+        { "id": "receita_venda_bens_imoveis", "classifications": ["3.1.01.01.07"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 23, "Q2": 73, "Q3": 123, "Q4": 173 } },
+        { "id": "demais_receitas_vendas", "classifications": ["3.1.01.01.08"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 24, "Q2": 74, "Q3": 124, "Q4": 174 } },
+        { "id": "receita_exportacao_produtos", "classifications": ["3.1.01.01.09"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 25, "Q2": 75, "Q3": 125, "Q4": 175 } },
+        { "id": "receita_exportacao_mercadoria", "classifications": ["3.1.01.01.10"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 26, "Q2": 76, "Q3": 126, "Q4": 176 } },
+        { "id": "receita_cartulas", "classifications": ["3.1.01.01.11"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 27, "Q2": 77, "Q3": 127, "Q4": 177 } },
+        { "id": "devolucoes", "classifications": ["3.2.01.01.01"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 28, "Q2": 78, "Q3": 128, "Q4": 178 } },
+        { "id": "icms_st_vendas", "classifications": ["3.2.01.01.10"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 31, "Q2": 81, "Q3": 131, "Q4": 181 } },
+        { "id": "ipi_vendas", "classifications": ["3.2.01.01.15"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 32, "Q2": 82, "Q3": 132, "Q4": 182 } },
+        { "id": "outras_deducoes", "classifications": ["3.2.01.01.02", "3.2.01.01.03", "3.2.01.01.04", "3.2.01.01.05", "3.2.01.01.06", "3.2.01.01.07", "3.2.01.01.09", "3.2.01.01.10", "3.2.01.01.12", "3.2.01.01.13", "3.2.01.01.14", "3.2.01.01.15", "3.2.01.01.16", "3.2.01.01.17", "3.2.01.01.18"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 33, "Q2": 83, "Q3": 133, "Q4": 183 } },
+        { "id": "incentivos_fiscais", "classifications": ["3.4.01.01.04", "3.4.01.01.05", "3.4.01.01.12"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 36, "Q2": 86, "Q3": 136, "Q4": 186 } },
+        { "id": "cmv", "classifications": ["4.1.01"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 39, "Q2": 89, "Q3": 139, "Q4": 189 } },
+        { "id": "cpv", "classifications": ["4.1.02"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 40, "Q2": 90, "Q3": 140, "Q4": 190 } },
+        { "id": "csp", "classifications": ["4.1.03"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 41, "Q2": 91, "Q3": 141, "Q4": 191 } },
+        { "id": "custos_producao", "classifications": ["4.1.04"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 42, "Q2": 92, "Q3": 142, "Q4": 192 } },
+        { "id": "custos_alienacao", "classifications": ["4.1.05"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 43, "Q2": 93, "Q3": 143, "Q4": 193 } },
+        { "id": "despesas", "classifications": ["5"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 46, "Q2": 96, "Q3": 146, "Q4": 196 } },
+        { "id": "outros_resultados_operacionais", "classifications": ["6"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 47, "Q2": 97, "Q3": 147, "Q4": 197 } },
+        { "id": "resultado_financeiro", "classifications": ["7"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 48, "Q2": 98, "Q3": 148, "Q4": 198 } },
+        { "id": "custos_total", "classifications": ["4.1.06"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 39, "Q2": 89, "Q3": 139, "Q4": 189 } },
+        { "id": "estoque_contabil", "classifications": ["1.1.14"], "match": "prefix", "value_column": "saldo_atual", "rows_by_quarter": { "Q1": 54, "Q2": 104, "Q3": 154, "Q4": 204 } }
+
+      ],
+      "bi_cfop_mappings": [
+        {
+          "id": "dif_estoque_gerencial",
+          "cfop_positivo": ["1101","1102","1118","1120","1121","1126","1128","1401","1403","2101","2102","2118","2120","2121","2126","2128","2401","2403"],
+          "cfop_negativo": ["5201","5202","5410","5411","6201","6202","6410","6411"],
+          "rows_by_quarter": { "Q1": 53, "Q2": 103, "Q3": 153, "Q4": 203 }
+        }
+      ]
+    },
+    "lucro_real": {
+      "template_file": "NOVO_FORMATO/otimizados/Atualização de Acompanhamento LR versão 2 - otimizado.xlsx",
+      "result_sheet": "Acomp.Resultado_2026",
+      "additions_sheet": "Adições e Exclusões",
+      "company_cells": {
+        "nome": "H6",
+        "cnpj": "H7"
+      },
+      "month_columns_by_quarter": {
+        "Q1": { "janeiro": "D", "fevereiro": "F", "marco": "H" },
+        "Q2": { "abril": "D", "maio": "F", "junho": "H" },
+        "Q3": { "julho": "D", "agosto": "F", "setembro": "H" },
+        "Q4": { "outubro": "D", "novembro": "F", "dezembro": "H" }
+      },
+      "additions_month_columns_by_quarter": {
+        "Q1": { "janeiro": "C", "fevereiro": "D", "marco": "E" },
+        "Q2": { "abril": "C", "maio": "D", "junho": "E" },
+        "Q3": { "julho": "C", "agosto": "D", "setembro": "E" },
+        "Q4": { "outubro": "C", "novembro": "D", "dezembro": "E" }
+      },
+      "result_mappings": [
+        { "id": "receita_venda_mercadorias", "classifications": ["3.1.01.01.01"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 16, "Q2": 63, "Q3": 112, "Q4": 160 } },
+        { "id": "receita_venda_produtos", "classifications": ["3.1.01.01.03"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 17, "Q2": 64, "Q3": 113, "Q4": 161 } },
+        { "id": "receita_transportes", "classifications": ["3.1.01.01.04"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 18, "Q2": 65, "Q3": 114, "Q4": 162 } },
+        { "id": "receita_servicos", "classifications": ["3.1.01.01.02"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 19, "Q2": 66, "Q3": 115, "Q4": 163 } },
+        { "id": "receita_locacao", "classifications": ["3.1.01.01.05"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 20, "Q2": 67, "Q3": 116, "Q4": 164 } },
+        { "id": "receita_financeira", "classifications": ["3.1.01.01.06"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 21, "Q2": 68, "Q3": 117, "Q4": 165 } },
+        { "id": "receita_venda_bens_imoveis", "classifications": ["3.1.01.01.07"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 22, "Q2": 69, "Q3": 118, "Q4": 166 } },
+        { "id": "demais_receitas_vendas", "classifications": ["3.1.01.01.08"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 23, "Q2": 70, "Q3": 119, "Q4": 167 } },
+        { "id": "receita_exportacao_produtos", "classifications": ["3.1.01.01.09"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 24, "Q2": 71, "Q3": 120, "Q4": 168 } },
+        { "id": "receita_exportacao_mercadoria", "classifications": ["3.1.01.01.10"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 25, "Q2": 72, "Q3": 121, "Q4": 169 } },
+        { "id": "receita_cartulas", "classifications": ["3.1.01.01.11"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 26, "Q2": 73, "Q3": 122, "Q4": 170 } },
+        { "id": "devolucoes", "classifications": ["3.2.01.01.01"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 27, "Q2": 74, "Q3": 123, "Q4": 171 } },
+        { "id": "outras_deducoes", "classifications": ["3.2.01.01.02", "3.2.01.01.03", "3.2.01.01.04", "3.2.01.01.05", "3.2.01.01.06", "3.2.01.01.07", "3.2.01.01.09", "3.2.01.01.10", "3.2.01.01.12", "3.2.01.01.13", "3.2.01.01.14", "3.2.01.01.15", "3.2.01.01.16", "3.2.01.01.17", "3.2.01.01.18"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 30, "Q2": 77, "Q3": 126, "Q4": 174 } },
+        { "id": "incentivos_fiscais", "classifications": ["3.4.01.01.04", "3.4.01.01.05", "3.4.01.01.12"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 33, "Q2": 80, "Q3": 129, "Q4": 177 } },
+        { "id": "cmv", "classifications": ["4.1.01"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 36, "Q2": 83, "Q3": 132, "Q4": 180 } },
+        { "id": "cpv", "classifications": ["4.1.02"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 37, "Q2": 84, "Q3": 133, "Q4": 181 } },
+        { "id": "csp", "classifications": ["4.1.03"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 38, "Q2": 85, "Q3": 134, "Q4": 182 } },
+        { "id": "custos_producao", "classifications": ["4.1.04"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 39, "Q2": 86, "Q3": 135, "Q4": 183 } },
+        { "id": "custos_alienacao", "classifications": ["4.1.05"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 40, "Q2": 87, "Q3": 136, "Q4": 184 } },
+        { "id": "despesas", "classifications": ["5"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 43, "Q2": 90, "Q3": 139, "Q4": 187 } },
+        { "id": "outros_resultados_operacionais", "classifications": ["6"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 44, "Q2": 91, "Q3": 140, "Q4": 188 } },
+        { "id": "resultado_financeiro", "classifications": ["7"], "match": "prefix", "value_column": "movimento", "rows_by_quarter": { "Q1": 45, "Q2": 92, "Q3": 141, "Q4": 189 } },
+        { "id": "estoque_contabil", "classifications": ["1.1.14"], "match": "prefix", "value_column": "saldo_atual", "rows_by_quarter": { "Q1": 51, "Q2": 98, "Q3": 147, "Q4": 195 } }
+      ],
+      "bi_cfop_mappings": [
+        {
+          "id": "dif_estoque_gerencial",
+          "cfop_positivo": ["1101","1102","1118","1120","1121","1126","1128","1401","1403","2101","2102","2118","2120","2121","2126","2128","2401","2403"],
+          "cfop_negativo": ["5201","5202","5410","5411","6201","6202","6410","6411"],
+          "rows_by_quarter": { "Q1": 50, "Q2": 97, "Q3": 146, "Q4": 194 }
+        }
+      ],
+      "additions_mappings": [
+        { "id": "despesas_indedutiveis", "classifications": ["5.2.08.01.01"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 10, "Q2": 28, "Q3": 46, "Q4": 64 } },
+        { "id": "outros_gastos_pessoal", "classifications": ["5.2.01.01.29"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 11, "Q2": 29, "Q3": 47, "Q4": 65 } },
+        { "id": "brindes", "classifications": ["5.2.08.01.05"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 12, "Q2": 30, "Q3": 48, "Q4": 66 } },
+        { "id": "multas_fiscais", "classifications": ["5.2.08.01.02"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 13, "Q2": 31, "Q3": 49, "Q4": 67 } },
+        { "id": "multas_transito", "classifications": ["5.2.08.01.03"], "match": "exact", "value_column": "movimento", "rows_by_quarter": { "Q1": 14, "Q2": 32, "Q3": 50, "Q4": 68 } }
+      ]
+    },
+    "mensal": {
+      "template_file": "NOVO_FORMATO/Atualização de Acompanhamento Mensal.xlsx",
+      "result_sheet": "Acomp. Resultados_2026",
+      "additions_sheet": "Adições e Exclusões",
+      "company_cells": {
+        "nome": "B5",
+        "cnpj": "B6"
+      },
+      "month_columns": {
+        "janeiro": "C",
+        "fevereiro": "E",
+        "marco": "G",
+        "abril": "I",
+        "maio": "K",
+        "junho": "M",
+        "julho": "O",
+        "agosto": "Q",
+        "setembro": "S",
+        "outubro": "U",
+        "novembro": "W",
+        "dezembro": "Y"
+      },
+      "additions_month_columns": {
+        "janeiro": "C",
+        "fevereiro": "D",
+        "marco": "E",
+        "abril": "F",
+        "maio": "G",
+        "junho": "H",
+        "julho": "I",
+        "agosto": "J",
+        "setembro": "K",
+        "outubro": "L",
+        "novembro": "M",
+        "dezembro": "N"
+      },
+      "result_mappings": [
+        { "id": "receita_venda_mercadorias", "classifications": ["3.1.01.01.01"], "match": "exact", "value_column": "movimento", "row": 13 },
+        { "id": "receita_venda_produtos", "classifications": ["3.1.01.01.03"], "match": "exact", "value_column": "movimento", "row": 14 },
+        { "id": "receita_transportes", "classifications": ["3.1.01.01.04"], "match": "exact", "value_column": "movimento", "row": 15 },
+        { "id": "receita_servicos", "classifications": ["3.1.01.01.02"], "match": "exact", "value_column": "movimento", "row": 16 },
+        { "id": "receita_locacao", "classifications": ["3.1.01.01.05"], "match": "exact", "value_column": "movimento", "row": 17 },
+        { "id": "receita_financeira", "classifications": ["3.1.01.01.06"], "match": "exact", "value_column": "movimento", "row": 18 },
+        { "id": "receita_venda_bens_imoveis", "classifications": ["3.1.01.01.07"], "match": "exact", "value_column": "movimento", "row": 19 },
+        { "id": "demais_receitas_vendas", "classifications": ["3.1.01.01.08"], "match": "exact", "value_column": "movimento", "row": 20 },
+        { "id": "receita_exportacao_produtos", "classifications": ["3.1.01.01.09"], "match": "exact", "value_column": "movimento", "row": 21 },
+        { "id": "receita_exportacao_mercadoria", "classifications": ["3.1.01.01.10"], "match": "exact", "value_column": "movimento", "row": 22 },
+        { "id": "receita_cartulas", "classifications": ["3.1.01.01.11"], "match": "exact", "value_column": "movimento", "row": 23 },
+        { "id": "devolucoes", "classifications": ["3.2.01.01.01"], "match": "exact", "value_column": "movimento", "row": 24 },
+        { "id": "outras_deducoes", "classifications": ["3.2.01.01.02", "3.2.01.01.03", "3.2.01.01.04", "3.2.01.01.05", "3.2.01.01.06", "3.2.01.01.07", "3.2.01.01.09", "3.2.01.01.10", "3.2.01.01.12", "3.2.01.01.13", "3.2.01.01.14", "3.2.01.01.15", "3.2.01.01.16", "3.2.01.01.17", "3.2.01.01.18"], "match": "exact", "value_column": "movimento", "row": 27 },
+        { "id": "incentivos_fiscais", "classifications": ["3.4.01.01.04", "3.4.01.01.05", "3.4.01.01.12"], "match": "exact", "value_column": "movimento", "row": 30 },
+        { "id": "cmv", "classifications": ["4.1.01"], "match": "prefix", "value_column": "movimento", "row": 33 },
+        { "id": "cpv", "classifications": ["4.1.02"], "match": "prefix", "value_column": "movimento", "row": 34 },
+        { "id": "csp", "classifications": ["4.1.03"], "match": "prefix", "value_column": "movimento", "row": 35 },
+        { "id": "custos_producao", "classifications": ["4.1.04"], "match": "prefix", "value_column": "movimento", "row": 36 },
+        { "id": "custos_alienacao", "classifications": ["4.1.05"], "match": "prefix", "value_column": "movimento", "row": 37 },
+        { "id": "despesas", "classifications": ["5"], "match": "prefix", "value_column": "movimento", "row": 40 },
+        { "id": "outros_resultados_operacionais", "classifications": ["6"], "match": "prefix", "value_column": "movimento", "row": 41 },
+        { "id": "resultado_financeiro", "classifications": ["7"], "match": "prefix", "value_column": "movimento", "row": 42 },
+        { "id": "estoque_contabil", "classifications": ["1.1.14"], "match": "prefix", "value_column": "saldo_atual", "row": 51 }
+      ],
+      "additions_mappings": [
+        { "id": "despesas_indedutiveis", "classifications": ["5.2.08.01.01"], "match": "exact", "value_column": "movimento", "row": 10 },
+        { "id": "outros_gastos_pessoal", "classifications": ["5.2.01.01.29"], "match": "exact", "value_column": "movimento", "row": 11 },
+        { "id": "brindes", "classifications": ["5.2.08.01.05"], "match": "exact", "value_column": "movimento", "row": 12 },
+        { "id": "multas_fiscais", "classifications": ["5.2.08.01.02"], "match": "exact", "value_column": "movimento", "row": 13 },
+        { "id": "multas_transito", "classifications": ["5.2.08.01.03"], "match": "exact", "value_column": "movimento", "row": 14 }
+      ],
+      "bi_cfop_mappings": [
+        {
+          "id": "dif_estoque_gerencial",
+          "cfop_positivo": ["1101","1102","1118","1120","1121","1126","1128","1401","1403","2101","2102","2118","2120","2121","2126","2128","2401","2403"],
+          "cfop_negativo": ["5201","5202","5410","5411","6201","6202","6410","6411"],
+          "row": 50
+        }
+      ]
+    }
+  }
+}
